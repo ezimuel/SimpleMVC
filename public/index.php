@@ -20,6 +20,9 @@ $request = ServerRequestFactory::fromGlobals(
     $_FILES
 );
 
+//avoid SQL or JS injection
+$queryString = htmlspecialchars($_SERVER["QUERY_STRING"], ENT_QUOTES,'UTF-8', true);
+
 // Routing
 $path   = $request->getUri()->getPath();
 $method = $request->getMethod();
