@@ -1,19 +1,22 @@
 ## SimpleMVC
 
-This is a mini MVC PHP framework using a simple routing system and [PSR-7](https://www.php-fig.org/psr/psr-7/) standard for HTTP messages.
+This is a mini MVC PHP framework using [FastRoute](https://github.com/nikic/FastRoute) routing system and [PSR-7](https://www.php-fig.org/psr/psr-7/) standard for HTTP messages.
 
-The routing system is using a PHP associative array as follows:
+The routing system uses a PHP configuration file as follows:
 
 ```php
 use SimpleMVC\Controller;
 
 return [
-    'GET /' => Controller\Home::class,
+    ['GET', '/', Controller\Home::class]
 ];
 ```
 
-All the controllers are mapped with an HTTP method and a URL path separated by a space character.
+All the controllers are mapped with an HTTP method and a URL path. You can use all the parameters and regex from FastRoute to specify the URL path. Please have a look at the [documentation](https://github.com/nikic/FastRoute/blob/master/README.md) of FastRoute for additional information.
 
+## Dispatch
+
+The dispatch algorithm select the controller to be executed according to HTTP method and URL.
 A controller implements a `ControllerInterface` with one function `execute($request)`, where `$request` is PSR-7 `ServerRequestInterface`, as follows:
 
 ```php
@@ -27,11 +30,9 @@ interface ControllerInterface
 }
 ```
 
-This project is basically a tutorial for introducing the [Model-View-Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) architecture.
+This project is used a tutorial for introducing the [Model-View-Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) architecture in modern PHP applications.
 
-This project is used in the PHP programming class of the [ITS ICT Piemonte](http://www.its-ictpiemonte.it/) school in Italy.
-
-**NOTE:** Since this is a tutorial project, the usage of this software in a production environment is discouraged.
+This project is used by [Enrico Zimuel](https://www.zimuel.it/) for teaching **PHP programming** at [ITS ICT Piemonte](http://www.its-ictpiemonte.it/) post-diploma school in Italy.
 
 ### Copyright
 
