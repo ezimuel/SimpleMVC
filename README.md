@@ -1,8 +1,17 @@
 ## SimpleMVC
 
-This is a mini MVC PHP framework using [FastRoute](https://github.com/nikic/FastRoute) routing system and [PSR-7](https://www.php-fig.org/psr/psr-7/) standard for HTTP messages.
+**SimpleMVC** is a micro MVC framework for PHP using [FastRoute](https://github.com/nikic/FastRoute), [PHP-DI](https://php-di.org/), [Plates](https://platesphp.com/) and [PSR-7](https://www.php-fig.org/psr/psr-7/) standard for HTTP messages.
 
-The routing system uses a PHP configuration file as follows:
+This framework is mainly used as tutorial for introducing the [Model-View-Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) architecture in modern PHP applications.
+
+This project is used for the course **PHP Programming** by [Enrico Zimuel](https://www.zimuel.it/) at [ITS ICT Piemonte](http://www.its-ictpiemonte.it/),
+an Higher Education School specialized in Information and communications technology in Italy.
+
+![ITS ICT Piemonte](public/img/its-torino.png)
+
+## Routing system
+
+The routing system uses a PHP configuration file as follows ([config/route.php](config/route.php)):
 
 ```php
 use SimpleMVC\Controller;
@@ -12,11 +21,14 @@ return [
 ];
 ```
 
-All the controllers are mapped with an HTTP method and a URL path. You can use all the parameters and regex from FastRoute to specify the URL path. Please have a look at the [documentation](https://github.com/nikic/FastRoute/blob/master/README.md) of FastRoute for additional information.
+A route is an element of the array with an HTTP method, a URL and a Controller class to be executed. 
+The URL can be specified using the [FastRoute syntax](https://github.com/nikic/FastRoute/blob/master/README.md) syntax.
 
 ## Dispatch
 
-The dispatch algorithm select the controller to be executed according to HTTP method and URL.
+The dispatch selects the controller to be executed according to HTTP method and URL.
+The dispatch is reported in [public/index.php](public/index.php) front controller.
+
 A controller implements a `ControllerInterface` with one function `execute($request)`, where `$request` is PSR-7 `ServerRequestInterface`, as follows:
 
 ```php
@@ -30,9 +42,12 @@ interface ControllerInterface
 }
 ```
 
-This project is used a tutorial for introducing the [Model-View-Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) architecture in modern PHP applications.
+## Dependecy injection container
 
-This project is used by [Enrico Zimuel](https://www.zimuel.it/) for teaching **PHP programming** at [ITS ICT Piemonte](http://www.its-ictpiemonte.it/) post-diploma school in Italy.
+All the dependencies are managed using the [PHP-DI](https://php-di.org/) project.
+
+The dependency injection container is configured in [config/container.php](config/container.php) file.
+
 
 ### Copyright
 
