@@ -7,7 +7,8 @@ require 'vendor/autoload.php';
 use DI\ContainerBuilder;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
-use Laminas\Diactoros\ServerRequestFactory;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7Server\ServerRequestCreator;
 use SimpleMVC\Controller\Error404;
 
 $builder = new ContainerBuilder();
@@ -21,14 +22,17 @@ $dispatcher = FastRoute\simpleDispatcher(function(RouteCollector $r) {
         $r->addRoute($route[0], $route[1], $route[2]);
     }
 });
-// Get PSR-7 request
-$request = ServerRequestFactory::fromGlobals(
-    $_SERVER,
-    $_GET,
-    $_POST,
-    $_COOKIE,
-    $_FILES
+
+// Build the PSR-7 server request
+$psr17Factory = new Psr17Factory();
+$creator = new ServerRequestCreator(
+    $psr17Factory, // ServerRequestFactory
+    $psr17Factory, // UriFactory
+    $psr17Factory, // UploadedFileFactory
+    $psr17Factory  // StreamFactory
 );
+$request = $creator->fromGlobals();
+
 // Dispatch 
 $routeInfo = $dispatcher->dispatch(
     $request->getMethod(), 
@@ -43,6 +47,11 @@ switch ($routeInfo[0]) {
         break;
     case Dispatcher::FOUND:
         $controllerName = $routeInfo[1];
+        if (isset($routeInfo[2])) {
+            foreach ($routeInfo[2] as $name => $value) {
+                $request = $request->withAttribute($name, $value);
+            }
+        }
         break;
 }
 $controller = $container->get($controllerName);

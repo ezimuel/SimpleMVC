@@ -1,10 +1,20 @@
 {
+    "name": "ezimuel/simple-mvc",
+    "type": "project",
+    "description": "Simple MVC micro framework",
+    "keywords": [
+        "framework",
+        "simple",
+        "mvc"
+    ],
+    "license": "Apache-2.0",
     "require": {
         "php": ">=7.2.0",
         "league/plates": "^3.3",
         "php-di/php-di": "^6.0",
-        "laminas/laminas-diactoros": "^2.3",
-        "nikic/fast-route": "^1.3"
+        "nikic/fast-route": "^1.3",
+        "nyholm/psr7": "^1.3",
+        "nyholm/psr7-server": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^8.4"
@@ -18,5 +28,8 @@
         "psr-4": {
             "SimpleMVC\\Test\\": "test/"
         }
+    },
+    "scripts": {
+        "test": "phpunit --colors=always"
     }
 }

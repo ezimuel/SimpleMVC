@@ -6,20 +6,25 @@ namespace SimpleMVC\Test\Controller;
 use League\Plates\Engine;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
-use SimpleMVC\Controller\Home;
+use SimpleMVC\Controller\Hello;
 
-final class HomeTest extends TestCase
+final class HelloTest extends TestCase
 {
     public function setUp(): void
     {
         $this->plates = new Engine('src/View');
-        $this->home = new Home($this->plates);
+        $this->home = new Hello($this->plates);
         $this->request = $this->createMock(ServerRequestInterface::class);
     }
 
     public function testExecuteRenderHomeView(): void
     {
-        $this->expectOutputString($this->plates->render('home'));
+        $name = 'test';
+        $this->request->method('getAttribute')
+            ->with($this->equalTo('name'))
+            ->willReturn($name);
+
+        $this->expectOutputString($this->plates->render('hello', ['name' => ucfirst($name)]));
         $this->home->execute($this->request);
     }
 }
