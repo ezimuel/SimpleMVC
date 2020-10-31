@@ -1,5 +1,7 @@
 ## SimpleMVC
 
+[![Build status](https://github.com/ezimuel/SimpleMVC/workflows/PHP%20test/badge.svg)](https://github.com/ezimuel/SimpleMVC/actions)
+
 **SimpleMVC** is a micro MVC framework for PHP using [FastRoute](https://github.com/nikic/FastRoute), [PHP-DI](https://php-di.org/), [Plates](https://platesphp.com/) and [PSR-7](https://www.php-fig.org/psr/psr-7/) standard for HTTP messages.
 
 This framework is mainly used as tutorial for introducing the [Model-View-Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) architecture in modern PHP applications.
