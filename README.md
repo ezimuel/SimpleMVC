@@ -11,6 +11,24 @@ an Higher Education School specialized in Information and communications technol
 
 ![ITS ICT Piemonte](public/img/its-torino.png)
 
+## Quickstart
+
+You can install the SimpleMVC framework with the following command:
+
+```
+composer create-project ezimuel/simple-mvc
+```
+
+This will create a `simple-mvc` folder containing the skeleton of a simple web application.
+You can execute the application using the PHP internal web server, as follows:
+
+```
+php -S 0.0.0.0:8080 -t public
+```
+
+You can see the application at the following url: [http://localhost:8080](http://localhost:8080).
+
+
 ## Routing system
 
 The routing system uses a PHP configuration file as follows ([config/route.php](config/route.php)):
