@@ -29,6 +29,7 @@
             "SimpleMVC\\Test\\": "test/"
         }
     },
+    "minimum-stability": "dev",
     "scripts": {
         "test": "phpunit --colors=always",
         "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
