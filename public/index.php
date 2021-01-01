@@ -10,6 +10,7 @@ use FastRoute\RouteCollector;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use SimpleMVC\Controller\Error404;
+use SimpleMVC\Controller\Error405;
 
 $builder = new ContainerBuilder();
 $builder->addDefinitions('config/container.php');
