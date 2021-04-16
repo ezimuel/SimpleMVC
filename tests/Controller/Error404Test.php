@@ -6,10 +6,20 @@ namespace SimpleMVC\Test\Controller;
 use League\Plates\Engine;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
+use SimpleMVC\Controller\ControllerInterface;
 use SimpleMVC\Controller\Error404;
 
 final class Error404Test extends TestCase
 {
+    /** @var Engine */
+    private $plates;
+
+    /** @var ControllerInterface */
+    private $error;
+    
+    /** @var object */
+    private $request;
+
     public function setUp(): void
     {
         $this->plates = new Engine('src/View');

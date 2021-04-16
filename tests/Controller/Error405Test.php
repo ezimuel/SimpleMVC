@@ -10,6 +10,15 @@ use SimpleMVC\Controller\Error405;
 
 final class Error405Test extends TestCase
 {
+    /** @var Engine */
+    private $plates;
+
+    /** @var ControllerInterface */
+    private $error;
+    
+    /** @var object */
+    private $request;
+    
     public function setUp(): void
     {
         $this->plates = new Engine('src/View');

@@ -6,10 +6,8 @@
 
 This framework is mainly used as tutorial for introducing the [Model-View-Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) architecture in modern PHP applications.
 
-This project is used for the course **PHP Programming** by [Enrico Zimuel](https://www.zimuel.it/) at [ITS ICT Piemonte](http://www.its-ictpiemonte.it/),
-an Higher Education School specialized in Information and communications technology in Italy.
-
-![ITS ICT Piemonte](public/img/its-torino.png)
+This project is used in the course **PHP Programming** by [Enrico Zimuel](https://www.zimuel.it/) at [ITS ICT Piemonte](http://www.its-ictpiemonte.it/),
+an Higher Education School specialized in Information and Communications Technology in [Turin](https://en.wikipedia.org/wiki/Turin) (Italy).
 
 ## Quickstart
 
@@ -19,15 +17,14 @@ You can install the SimpleMVC framework with the following command:
 composer create-project ezimuel/simple-mvc
 ```
 
-This will create a `simple-mvc` folder containing the skeleton of a simple web application.
+This will create a `simple-mvc` folder containing the skeleton of a web application.
 You can execute the application using the PHP internal web server, as follows:
 
 ```
 php -S 0.0.0.0:8080 -t public
 ```
 
-You can see the application at the following url: [http://localhost:8080](http://localhost:8080).
-
+The application will be executed at [http://localhost:8080](http://localhost:8080).
 
 ## Routing system
 
@@ -47,9 +44,11 @@ The URL can be specified using the [FastRoute syntax](https://github.com/nikic/F
 ## Dispatch
 
 The dispatch selects the controller to be executed according to HTTP method and URL.
+
 The dispatch is reported in [public/index.php](public/index.php) front controller.
 
-A controller implements a `ControllerInterface` with one function `execute($request)`, where `$request` is PSR-7 `ServerRequestInterface`, as follows:
+A controller implements a `ControllerInterface` that contains only one function `execute($request)`,
+where `$request` is a PSR-7 `ServerRequestInterface` object:
 
 ```php
 namespace SimpleMVC\Controller;
@@ -61,6 +60,43 @@ interface ControllerInterface
     public function execute(ServerRequestInterface $request);
 }
 ```
+
+The execute function can do anything: render a web page, output a JSON string, 
+manipulate the HTTP request and send it to another Controller and so on.
+
+We did not define a type response by design. We would like to offer a simple architecture
+with the freedom to manage different use cases.
+
+## A simple render controller
+
+As we discussed before the Controller can implement anything. For instance, if you want
+to render a web page you can use the Plates engine stored in the container as follows:
+
+```php
+use League\Plates\Engine;
+use Psr\Http\Message\ServerRequestInterface;
+
+class Home implements ControllerInterface
+{
+    protected $plates;
+
+    public function __construct(Engine $plates)
+    {
+        $this->plates = $plates;
+    }
+
+    public function execute(ServerRequestInterface $request)
+    {
+        echo $this->plates->render('home');
+    }
+}
+```
+
+This [Home](src/Controller/Home.php) controller requires the `League\Plates\Engine` in the constructor and uses it
+to render the [src/View/home.php](src/View/home.php) template.
+
+Using the DI pattern we don't need to pass it explicitly (e.g. using a [Factory](https://en.wikipedia.org/wiki/Factory_method_pattern)).
+Every dependency is resolved automatically by [PHP-DI](https://php-di.org/).
 
 ## Dependecy injection container
 
