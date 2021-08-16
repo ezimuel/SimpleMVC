@@ -4,10 +4,15 @@ declare(strict_types=1);
 namespace SimpleMVC\Controller;
 
 use League\Plates\Engine;
+use Nyholm\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 class Error404 implements ControllerInterface
 {
+    /**
+     * @var Engine
+     */
     protected $plates;
 
     public function __construct(Engine $plates)
@@ -15,9 +20,12 @@ class Error404 implements ControllerInterface
         $this->plates = $plates;
     }
 
-    public function execute(ServerRequestInterface $request)
+    public function execute(ServerRequestInterface $request, ResponseInterface $response = null): ?ResponseInterface
     {
-        http_response_code(404);
-        echo $this->plates->render('404');
+        return new Response(
+            404,
+            [],
+            $this->plates->render('404')
+        );
     }
 }

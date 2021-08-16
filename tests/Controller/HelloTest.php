@@ -4,8 +4,10 @@ declare(strict_types=1);
 namespace SimpleMVC\Test\Controller;
 
 use League\Plates\Engine;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ServerRequestInterface;
+use SimpleMVC\Controller\ControllerInterface;
 use SimpleMVC\Controller\Hello;
 
 final class HelloTest extends TestCase
@@ -16,7 +18,7 @@ final class HelloTest extends TestCase
     /** @var ControllerInterface */
     private $home;
     
-    /** @var object */
+    /** @var ServerRequestInterface&MockObject */
     private $request;
 
     public function setUp(): void
@@ -33,7 +35,9 @@ final class HelloTest extends TestCase
             ->with($this->equalTo('name'))
             ->willReturn($name);
 
-        $this->expectOutputString($this->plates->render('hello', ['name' => ucfirst($name)]));
-        $this->home->execute($this->request);
+        $output = $this->plates->render('hello', ['name' => ucfirst($name)]);
+        $response = $this->home->execute($this->request);
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertEquals($output, (string) $response->getBody());
     }
 }
