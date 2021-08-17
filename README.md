@@ -2,22 +2,34 @@
 
 [![Build status](https://github.com/ezimuel/SimpleMVC/workflows/PHP%20test/badge.svg)](https://github.com/ezimuel/SimpleMVC/actions)
 
-**SimpleMVC** is a micro MVC framework for PHP using [FastRoute](https://github.com/nikic/FastRoute), [PHP-DI](https://php-di.org/), [Plates](https://platesphp.com/) and [PSR-7](https://www.php-fig.org/psr/psr-7/) standard for HTTP messages.
+**SimpleMVC** is a micro MVC framework for PHP based on the [KISS](https://en.wikipedia.org/wiki/KISS_principle) principle:
+> "Keep It Simple, Stupid"
 
-This framework is mainly used as tutorial for introducing the [Model-View-Controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) architecture in modern PHP applications.
+The goal of this project is to offer a simple and fast [MVC](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller)
+framework for PHP applications.
+
+It uses the [dependency injection](https://en.wikipedia.org/wiki/Dependency_injection) principle to manage
+the dependencies between classes and the [FastRoute](https://github.com/nikic/FastRoute) library
+for implementing the routing system.
+
+SimpleMVC uses the following PSR standards, from the [PHP-FIG](https://www.php-fig.org/) initiative:
+
+- [PSR-11](https://www.php-fig.org/psr/psr-11/) for DI Container;
+- [PSR-7](https://www.php-fig.org/psr/psr-7/) for HTTP message;
+- [PSR-3](https://www.php-fig.org/psr/psr-3/) for logging;
 
 This project is used in the course **PHP Programming** by [Enrico Zimuel](https://www.zimuel.it/) at [ITS ICT Piemonte](http://www.its-ictpiemonte.it/),
 an Higher Education School specialized in Information and Communications Technology in [Turin](https://en.wikipedia.org/wiki/Turin) (Italy).
 
 ## Quickstart
 
-You can install the SimpleMVC framework with the following command:
+You can install a SimpleMVC skeleton application using the following command:
 
 ```
-composer create-project ezimuel/simple-mvc
+composer create-project simplemvc/skeleton
 ```
 
-This will create a `simple-mvc` folder containing the skeleton of a web application.
+This will create a `skeleton` folder containing a basic web application.
 You can execute the application using the PHP internal web server, as follows:
 
 ```
@@ -25,6 +37,33 @@ php -S 0.0.0.0:8080 -t public
 ```
 
 The application will be executed at [http://localhost:8080](http://localhost:8080).
+
+This skeleton uses [PHP-DI](https://php-di.org/) as DI container and [Plates](https://platesphp.com/)
+as template engine.
+
+## Configuration
+
+The application is configured using the ([config/app.php](config/app.php)) file:
+
+```php
+return [
+    'routing' => [
+        'routes' => require 'route.php',
+        'cache'  => true
+    ],
+    'container' => require 'container.php',
+    'error' => [
+        '404' => Error404::class,
+        '405' => Error405::class
+    ],
+    'bootstrap' => function(ContainerInterface $c) {
+       // Put here the code to bootstrap, if any
+       // e.g. a database or ORM initialization
+    }
+];
+```
+Each section contains the configuration of the routing system (`route`), the DI Container (`container`),
+the error based on HTTP status code (`error`) and the `boostrap`, if present.
 
 ## Routing system
 
@@ -39,45 +78,49 @@ return [
 ```
 
 A route is an element of the array with an HTTP method, a URL and a Controller class to be executed. 
-The URL can be specified using the [FastRoute syntax](https://github.com/nikic/FastRoute/blob/master/README.md) syntax.
+The URL can be specified using the FastRoute [syntax](https://github.com/nikic/FastRoute/blob/master/README.md).
 
-## Dispatch
+## Controller
 
-The dispatch selects the controller to be executed according to HTTP method and URL.
-
-The dispatch is reported in [public/index.php](public/index.php) front controller.
-
-A controller implements a `ControllerInterface` that contains only one function `execute($request)`,
-where `$request` is a PSR-7 `ServerRequestInterface` object:
+Each controller in SimpleMvc implements the `ControllerInterface`, as follows:
 
 ```php
 namespace SimpleMVC\Controller;
 
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 interface ControllerInterface
 {
-    public function execute(ServerRequestInterface $request);
+    public function execute(
+        ServerRequestInterface $request, 
+        ResponseInterface $response = null
+    ): ?ResponseInterface;
 }
 ```
 
-The execute function can do anything: render a web page, output a JSON string, 
-manipulate the HTTP request and send it to another Controller and so on.
+The `execute()` function accepts two parameters, the `$request` and the optional `$response`.
+These are [PSR-7](https://www.php-fig.org/psr/psr-7/) HTTP request and response.
+The request is mandatory to execute a controller. The response is typically used when you need to
+execute a pipeline of multiple controllers, where you may want to pass the response from one controller
+to another.
 
-We did not define a type response by design. We would like to offer a simple architecture
-with the freedom to manage different use cases.
-
-## A simple render controller
-
-As we discussed before the Controller can implement anything. For instance, if you want
-to render a web page you can use the Plates engine stored in the container as follows:
+The return of the `execute()` function can be null (?) or a PSR-7 Response. 
+For instance, the `Home` controller reported in the skeleton application is as follows:
 
 ```php
+namespace SimpleMVC\Controller;
+
 use League\Plates\Engine;
+use Nyholm\Psr7\Response;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 class Home implements ControllerInterface
 {
+    /**
+     * @var Engine
+     */
     protected $plates;
 
     public function __construct(Engine $plates)
@@ -85,18 +128,46 @@ class Home implements ControllerInterface
         $this->plates = $plates;
     }
 
-    public function execute(ServerRequestInterface $request)
+    public function execute(ServerRequestInterface $request, ResponseInterface $response = null): ?ResponseInterface
     {
-        echo $this->plates->render('home');
+        return new Response(
+            200,
+            [],
+            $this->plates->render('home')
+        );
     }
 }
 ```
 
-This [Home](src/Controller/Home.php) controller requires the `League\Plates\Engine` in the constructor and uses it
-to render the [src/View/home.php](src/View/home.php) template.
+The `execute()` function returns a PSR-7 `Nyholm\Psr7\Response` object using the [nyholm/psr7](https://github.com/Nyholm/psr7)
+project.
 
-Using the DI pattern we don't need to pass it explicitly (e.g. using a [Factory](https://en.wikipedia.org/wiki/Factory_method_pattern)).
-Every dependency is resolved automatically by [PHP-DI](https://php-di.org/).
+The controller can also return `null`, for instance when it implements an authentication check or when it decorates the request.
+This is typically used when executing a controller pipeline.
+## Execute a controller pipeline
+
+In the route configuration file you can specify an array of controller to be executed.
+For instance, you can speficy that the `Hello` controller needs HTTP authentication and you
+can implement the logic in a separate `Auth` controller.
+The `config/route.php` configuration can be as follows:
+
+```php
+use SimpleMVC\Controller;
+
+return [
+    ['GET', '/', [Controller\Auth::class, Controller\Hello::class]]
+];
+```
+
+The third element of the array is an array itself, containing the list of controller to be executed.
+The order of execution is the same of the array, that means `Auth` will be executed first and `Home` after.
+
+If you want, you can halt the execution flow of SimpleMVC returning a [HaltResponse](src/Response/HaltResponse.php).
+This response is just an empty class that extends a PSR-7 request to inform SimpleMVC to **stop the execution**.
+
+We provided an example of [Controller\Auth](src/Controller/Auth.php) using a
+[Basic Access Authentication](https://en.wikipedia.org/wiki/Basic_access_authentication).
+
 
 ## Dependecy injection container
 
@@ -104,6 +175,40 @@ All the dependencies are managed using the [PHP-DI](https://php-di.org/) project
 
 The dependency injection container is configured in [config/container.php](config/container.php) file.
 
+## Front controller
+
+A SimpleMVC application is executed using the `public/index.php` file.
+All the HTTP requests pass from this file, that is called **Front controller**.
+
+![MVC diagram](./mvc.png)
+
+An example of front controller is as follows:
+
+```php
+declare(strict_types=1);
+
+chdir(dirname(__DIR__));
+require 'vendor/autoload.php';
+
+use DI\ContainerBuilder;
+use SimpleMVC\App;
+
+$builder = new ContainerBuilder();
+$builder->addDefinitions('config/container.php');
+$container = $builder->build();
+
+$app = new App($container, require 'config/app.php');
+$app->bootstrap();
+$app->dispatch();
+```
+
+In this file we build the CI container, reading from the [config/container.php](config/container.php) file
+and we pass this container to the [SimpleMVC\App]() class, along with the [config/app.php](config/app.php)
+configuration file.
+
+Then, we execute the `bootstrap` function if we have specified a callable in the `bootstrap` field of `config/app.php`.
+Last, we execute the `dispatch` function that performs the dispatch of the Controller using the `config/route.php`
+configuration.
 
 ### Copyright
 
