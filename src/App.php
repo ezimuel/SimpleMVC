@@ -15,6 +15,7 @@ use FastRoute\RouteCollector;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
@@ -32,45 +33,22 @@ class App
 {
     const ROUTE_CACHE_FILE = __DIR__ . '/../data/route.cache';
 
-    /**
-     * @var Dispatcher
-     */
-    private $dispatcher;
-
-    /**
-     * @var ServerRequestInterface
-     */
-    private $request;
-
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
+    private Dispatcher $dispatcher;
+    private ServerRequestInterface $request;
+    private ContainerInterface $container;
+    private LoggerInterface $logger;
+    private float $startTime;
 
     /**
      * @var mixed[]
      */
     private $config;
 
-    /**
-     * @var LoggerInterface
-     */
-    private $logger;
-
-    /**
-     * @var float
-     */
-    private $startTime;
-
-    /**
-     * @param mixed[] $config
-     */
-    public function __construct(ContainerInterface $container, array $config, LoggerInterface $logger = null)
+    public function __construct(ContainerInterface $container, array $config)
     {
         $this->startTime = microtime(true);
         $this->container = $container;
         $this->config    = $config;        
-        $this->logger    = $logger ?? new NullLogger();
 
         // Routing initialization
         if (!isset($config['routing']['routes'])) {
@@ -84,6 +62,15 @@ class App
             'cacheFile'     => static::ROUTE_CACHE_FILE,
             'cacheDisabled' => !$config['routing']['cache'] ?? false
         ]);
+
+        // Logger initialization
+        if (isset($config['logger']) && !($config['logger'] instanceof LoggerInterface)) {
+            throw new InvalidConfigException(sprintf(
+                "The logger must implement %s'",
+                LoggerInterface::class
+            ));
+        }
+        $this->logger = $config['logger'] ?? new NullLogger();
 
         $f = new Psr17Factory();
         $this->request = (new ServerRequestCreator($f, $f, $f, $f))->fromGlobals();
@@ -166,7 +153,8 @@ class App
             $response = null;
             foreach ($controllerName as $controller) {
                 $this->logger->info(sprintf("Executing %s", $controller));
-                $response = $this->container->get($controller)
+                $response = $this->container
+                    ->get($controller)
                     ->execute($this->request, $response);
                 if ($response instanceof HaltResponse) {
                     break;
@@ -177,11 +165,6 @@ class App
                 'The Controller name is not a string or an array: %s',
                 var_export($controllerName, true)
             ));
-        }
-        if (is_null($response)) {
-            throw new ResponseException(
-                "The response is null and it should be Psr\Http\Message\ResponseInterface"
-            );
         }
         SapiEmitter::emit($response);
         
